@@ -7,17 +7,67 @@
 #include <sstream>
 #include <random> // For random number generation
 #include <algorithm> // For std::max_element
+#include "../../cpp-httplib-master/httplib.h"
 #include <string>
-#include "ForexDataTypes.h"
 #include "CalculateSupportResistance.h"
 #include "PlotDataAsGraph.h"
 #include "CalculateAverageGainOrLoss.h"
-using namespace std;
 
+
+using namespace std;
+using namespace httplib;
 
 
 int main()
 {
+
+
+   
+    try {
+        httplib::Client client("https://api.polygon.io");
+
+        // Create headers
+        httplib::Headers headers;
+        headers.emplace("User-Agent", "YourApp/1.0");
+        // Add other headers as needed
+        // headers.emplace("Content-Type", "application/json"); // Example Content-Type header
+
+        // Create parameters (if needed)
+        httplib::Params params;
+        params.emplace("apiKey", "DCmeDxK10_BcKccDxTD7cWwzvUd4s070");
+
+        // Make the GET request with headers and parameters
+        auto response = client.Get("/v2/aggs/ticker/C:EURUSD/range/1/day/2023-01-09/2023-01-09", params, headers);
+
+        if (response) {
+            if (response->status == 200) {
+                // Successful GET request
+                std::cout << "Response: " << response->body << std::endl;
+            }
+            else {
+                std::cerr << "HTTP Error: " << response->status << std::endl;
+                std::cerr << "Response: " << response->body << std::endl;
+            }
+        }
+        else {
+            std::cerr << "Request failed. Error code: " << response.error() << std::endl;
+        }
+    }
+    catch (const std::invalid_argument& e) {
+        // Handle the invalid argument exception (unsupported scheme)
+        std::cerr << "Invalid argument exception caught: " << e.what() << std::endl;
+    }
+    catch (const std::exception& e) {
+        // Handle other exceptions
+        std::cerr << "Exception caught: " << e.what() << std::endl;
+    }
+
+    return 0;
+
+
+
+
+
     // Create a vector to store the dataset
     std::vector<ForexData> dataset;
 
@@ -74,6 +124,8 @@ int main()
             << " Volume: " << data.volume << std::endl;
     }
 
+    
+
    
 
      // Extract bid prices from the dataset for plotting
@@ -91,7 +143,7 @@ int main()
 
      CalculateAvgGainOrLoss(dataset);
     
-
+     
    
     
     return 0;
